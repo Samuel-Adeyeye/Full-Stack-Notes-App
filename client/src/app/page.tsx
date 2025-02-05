@@ -12,15 +12,17 @@ interface Note {
 const App = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [notes, setNotes] = useState<Note[]>([
     {
       id: 1,
-      title: "test note 1",
-      content: "bla bla note1",
+      title: "Add Note Title",
+      content: "Add note content",
     },
     // ... other notes
   ]);
 
+  // Function to create a new note object and add it to our notes array
   const handleAddNote = (event: React.FormEvent) => {
     event.preventDefault();
     
@@ -35,10 +37,47 @@ const App = () => {
     setContent("");
   };
 
+  // Function to handle the user's click event on a note
+  const handleNoteClick = (note: Note) => {
+    setSelectedNote(note);
+    setTitle(note.title);
+    setContent(note.content);
+  };
+
+  // Function to handle note updates
+
+  const handleUpdateNote = (event: React.FormEvent) => {
+    event.preventDefault();
+  
+    if (!selectedNote) {
+      return;
+    }
+  
+    const updatedNote: Note = {
+      id: selectedNote.id,
+      title: title,
+      content: content,
+    };
+  
+    const updatedNotesList = notes.map((note) => (note.id === selectedNote.id ? updatedNote : note));
+  
+    setNotes(updatedNotesList);
+    setTitle("");
+    setContent("");
+    setSelectedNote(null);
+  };
+
+  // Function to cancel a note update
+  const handleCancel = () => {
+    setTitle("");
+    setContent("");
+    setSelectedNote(null);
+  };
+
   return (
     <>
       <div className="app-container">
-        <form className="note-form" onSubmit={handleAddNote}>
+        <form className="note-form" onSubmit={(event) => (selectedNote ? handleUpdateNote(event) : handleAddNote(event))}>
           <input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
@@ -53,13 +92,20 @@ const App = () => {
             rows={10}
             required
           />
+          {selectedNote ? (
+            <div className="edit-buttons">
+              <button type="submit">Save</button>
+              <button onClick={handleCancel}>Cancel</button>
 
-          <button type="submit">Add Note</button>
+            </div>
+          ) : (
+              <button type="submit">Add Note</button>
+            )}
         </form>
 
         <div className="notes-grid">
           {notes.map((note) => (
-            <div className="note-item" key={note.id}>
+            <div className="note-item" key={note.id} onClick={() => handleNoteClick(note)}>
               <div className="notes-header">
                 <button>x</button>
               </div>
