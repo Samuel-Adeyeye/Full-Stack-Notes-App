@@ -11,6 +11,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // url= env("postgresql://postgres:silentwords@localhost:5500/notes_app")
 }
 
 model Note {

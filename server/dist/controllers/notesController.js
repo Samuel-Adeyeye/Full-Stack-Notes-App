@@ -7,33 +7,37 @@ const noteController = {
             res.json(notes);
         }
         catch (error) {
-            res.status(500).send("Error fetching notes");
+            next(error);
         }
     },
     createNote: async (req, res, next) => {
         const { title, content } = req.body;
         if (!title || !content) {
-            res.status(400).send("title and content fields required");
+            res.status(400).json({ error: "Title and content are required" });
             return;
         }
         try {
             const note = await prisma.note.create({
                 data: { title, content },
             });
-            res.json(note);
+            res.status(201).json(note);
+            return; // Explicitly return void
         }
         catch (error) {
-            res.status(500).send("Oops, something went wrong");
+            next(error);
+            return; // Ensures function matches `Promise<void>`
         }
     },
     updateNote: async (req, res, next) => {
         const { title, content } = req.body;
-        const id = parseInt(req.params.id);
+        const id = parseInt(req.params.id, 10);
         if (!title || !content) {
-            res.status(400).send("title and content fields required");
+            res.status(400).json({ error: "Title and content are required" });
+            return; // Explicitly return to satisfy TypeScript
         }
-        if (!id || isNaN(id)) {
-            res.status(400).send("ID must be a valid number");
+        if (isNaN(id)) {
+            res.status(400).json({ error: "ID must be a valid number" });
+            return;
         }
         try {
             const updatedNote = await prisma.note.update({
@@ -43,22 +47,23 @@ const noteController = {
             res.json(updatedNote);
         }
         catch (error) {
-            res.status(500).send("Oops, something went wrong");
+            next(error);
         }
     },
     deleteNote: async (req, res, next) => {
-        const id = parseInt(req.params.id);
-        if (!id || isNaN(id)) {
-            res.status(400).send("ID field required");
+        const id = parseInt(req.params.id, 10);
+        if (isNaN(id)) {
+            res.status(400).json({ error: "ID must be a valid number" });
+            return;
         }
         try {
             await prisma.note.delete({
                 where: { id },
             });
-            res.status(204).send();
+            res.status(200).json({ message: "Note deleted successfully" });
         }
         catch (error) {
-            res.status(500).send("Oops, something went wrong");
+            next(error); // Pass error to middleware for proper handling
         }
     },
 };
