@@ -18,7 +18,7 @@ const App = () => {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/notes");
+        const response = await fetch("https://full-stack-notes-app-h76z.onrender.com/api/notes");
         const notes: Note[] = await response.json();
         setNotes(notes);
       } catch (e) {
@@ -34,7 +34,7 @@ const App = () => {
     
     try {
       const response = await fetch(
-        "http://localhost:5000/api/notes",
+        "https://full-stack-notes-app-h76z.onrender.com/api/notes",
         {
           method: "POST",
           headers: {
@@ -94,7 +94,7 @@ const App = () => {
 
     try {
       await fetch(
-        `http://localhost:5000/api/notes/${noteId}`,
+        `https://full-stack-notes-app-h76z.onrender.com/api/notes/${noteId}`,
         {
           method: "DELETE",
         }
