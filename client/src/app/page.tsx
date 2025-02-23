@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react';
-import './globals.css'
+import './globals.css';
 
 interface Note {
   id: number;
@@ -15,10 +15,12 @@ const App = () => {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
 
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const response = await fetch("https://full-stack-notes-app-h76z.onrender.com/api/notes");
+        const response = await fetch(`${BASE_URL}`);
         const notes: Note[] = await response.json();
         setNotes(notes);
       } catch (e) {
@@ -28,13 +30,12 @@ const App = () => {
     fetchNotes()
   }, []);
 
-  // Function to create a new note object and add it to our notes array
   const handleAddNote = async (event: React.FormEvent) => {
     event.preventDefault();
     
     try {
       const response = await fetch(
-        "https://full-stack-notes-app-h76z.onrender.com/api/notes",
+        `${BASE_URL}`,
         {
           method: "POST",
           headers: {
@@ -48,24 +49,19 @@ const App = () => {
       );
       const newNote = await response.json();
     
-    setNotes([newNote, ...notes]);
-    setTitle("");
-    setContent("");
+      setNotes([newNote, ...notes]);
+      setTitle("");
+      setContent("");
     } catch (e) {
       console.log(e);
     }
-    
-    
   };
 
-  // Function to handle the user's click event on a note
   const handleNoteClick = (note: Note) => {
     setSelectedNote(note);
     setTitle(note.title);
     setContent(note.content);
   };
-
-  // Function to handle note updates
 
   const handleUpdateNote = (event: React.FormEvent) => {
     event.preventDefault();
@@ -88,13 +84,20 @@ const App = () => {
     setSelectedNote(null);
   };
 
-  // Function to delete a note
+  // Updated deleteNote function with confirmation
   const deleteNote = async (event: React.MouseEvent, noteId: number) => {
     event.stopPropagation();
 
+    // Add confirmation dialog
+    const confirmDelete = window.confirm("Are you sure you want to delete this note?");
+    
+    if (!confirmDelete) {
+      return; // Exit if user cancels
+    }
+
     try {
       await fetch(
-        `https://full-stack-notes-app-h76z.onrender.com/api/notes/${noteId}`,
+        `${BASE_URL}${noteId}`,
         {
           method: "DELETE",
         }
@@ -106,13 +109,8 @@ const App = () => {
     } catch (e) {
       console.log(e);
     }
-  
-    const updatedNotes = notes.filter((note) => note.id !== noteId);
-  
-    setNotes(updatedNotes);
   };
 
-  // Function to cancel a note update
   const handleCancel = () => {
     setTitle("");
     setContent("");
@@ -141,18 +139,17 @@ const App = () => {
             <div className="edit-buttons">
               <button type="submit">Save</button>
               <button onClick={handleCancel}>Cancel</button>
-
             </div>
           ) : (
-              <button type="submit">Add Note</button>
-            )}
+            <button type="submit">Add Note</button>
+          )}
         </form>
 
         <div className="notes-grid">
           {notes.map((note) => (
             <div className="note-item" key={note.id} onClick={() => handleNoteClick(note)}>
               <div className="notes-header">
-              <button onClick={(event) => deleteNote(event, note.id)}>x</button>
+                <button onClick={(event) => deleteNote(event, note.id)}>x</button>
               </div>
               <h2>{note.title}</h2>
               <p>{note.content}</p>
